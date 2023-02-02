@@ -1,0 +1,101 @@
+/**
+*   Домены для проверки телефонного номера и электронной почты
+**/
+CREATE DOMAIN phone AS TEXT
+CHECK( VALUE ~ '^[0-9]{11}$');
+
+CREATE DOMAIN email AS TEXT
+  CHECK ( value ~ '^[a-zA-Z0-9.!#$%&''*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$' );
+
+/**
+*   Функция для генерации случайной строки с числами и буквами длиной N символов
+**/
+
+CREATE EXTENSION pgcrypto;
+
+CREATE OR REPLACE FUNCTION generate_uid(size INT) RETURNS TEXT AS $$
+DECLARE
+  characters TEXT := 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  bytes BYTEA := gen_random_bytes(size);
+  l INT := length(characters);
+  i INT := 0;
+  output TEXT := '';
+BEGIN
+  WHILE i < size LOOP
+    output := output || substr(characters, get_byte(bytes, i) % l + 1, 1);
+    i := i + 1;
+  END LOOP;
+  RETURN output;
+END;
+$$ LANGUAGE plpgsql VOLATILE;
+
+/**
+*   Создание Таблиц
+**/
+
+CREATE TABLE event_place (
+	event_place_id TEXT PRIMARY KEY DEFAULT ('place_' || generate_uid(10)), 
+	event_place_name varchar(100) NOT NULL
+);
+
+CREATE TABLE event_level (
+	event_level_id TEXT PRIMARY KEY DEFAULT ('level_' || generate_uid(10)),
+	event_level_name varchar(100) NOT NULL
+);
+
+CREATE TABLE event_type (
+	event_type_id TEXT PRIMARY KEY DEFAULT ('type_' || generate_uid(10)),
+	event_type_name varchar(100) NOT NULL
+);
+
+CREATE TABLE users (
+	user_id TEXT PRIMARY KEY DEFAULT ('user_' || generate_uid(10)),
+	user_name varchar(100) NOT NULL,
+	user_descr varchar(200) NOT NULL,
+	user_login text NOT NULL,
+	user_password text NOT NULL,
+	user_phone phone NULL,
+	user_email email NULL
+);
+
+CREATE TABLE events (
+	event_id TEXT PRIMARY KEY DEFAULT ('event_' || generate_uid(10)),
+	event_name varchar(200) NOT NULL,
+	event_descr varchar(1000) NOT NULL,
+	event_type text REFERENCES event_type (event_type_id),
+	event_level text REFERENCES event_level (event_level_id),
+	event_place text REFERENCES event_place (event_place_id),
+	event_date date NOT NULL,
+	event_vacancies integer NOT NULL,
+	organisator varchar(200) NOT NULL
+);
+
+CREATE TABLE user_event (
+	user_event_id text PRIMARY KEY DEFAULT generate_uid(10),
+	user_id text REFERENCES users (user_id),
+	event_id text REFERENCES events (event_id)
+);
+/**
+*   Заполнение
+**/
+
+INSERT INTO users (user_name, user_descr, user_login, user_password, user_phone, user_email)
+VALUES
+('Биробиджон', 'Студент Апити', 'yarik123', 'sobaka337', '79172607998', 'privet@mail.ru');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
