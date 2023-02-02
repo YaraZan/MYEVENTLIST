@@ -67,7 +67,7 @@ CREATE TABLE events (
 	event_place integer REFERENCES event_place (event_place_id),
 	event_date date NOT NULL,
 	event_vacancies integer NOT NULL,
-	organisator varchar(200) NOT NULL
+	organisator text REFERENCES users (user_id)
 );
 
 CREATE TABLE user_event (
@@ -106,9 +106,10 @@ VALUES
 ('Региональный'),
 ('Федеральный');
 
-
-
-
+INSERT INTO events (event_name, event_descr, event_type, event_level, event_place, event_date, event_vacancies, organisator)
+VALUES
+('PyHack 2023', 'Хакатон по питону', 1, 2, 3, '2023-03-31', 200, 'user_7NSrtSv4jp'),
+('FrontEND event', 'Мастер-класс по фронтенд разработке', 2, 3, 1, '2023-04-28', 30, 'user_r7k9IQJ2zr');
 
 
 
